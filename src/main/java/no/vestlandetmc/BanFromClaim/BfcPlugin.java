@@ -27,7 +27,6 @@ import no.vestlandetmc.BanFromClaim.config.Messages;
 import no.vestlandetmc.BanFromClaim.handler.CombatScheduler;
 import no.vestlandetmc.BanFromClaim.handler.Hooks;
 import no.vestlandetmc.BanFromClaim.handler.MessageHandler;
-import no.vestlandetmc.BanFromClaim.handler.UpdateNotification;
 import no.vestlandetmc.BanFromClaim.listener.CombatMode;
 import no.vestlandetmc.BanFromClaim.listener.GDListener;
 import no.vestlandetmc.BanFromClaim.listener.GPListener;
@@ -123,16 +122,6 @@ public class BfcPlugin extends JavaPlugin {
 
 		}.runTaskTimer(this, 30 * 20L, 3600 * 20L);
 
-		new UpdateNotification(70897) {
-
-			@Override
-			public void onUpdateAvailable() {
-				MessageHandler.sendConsole("&c-----------------------");
-				MessageHandler.sendConsole("&2[" + getDescription().getPrefix() + "] &7Version " + getLatestVersion() + " is now available!");
-				MessageHandler.sendConsole("&2[" + getDescription().getPrefix() + "] &7Download the update at https://www.spigotmc.org/resources/" + getProjectId());
-				MessageHandler.sendConsole("&c-----------------------");
-			}
-		}.runTaskAsynchronously(this);
 	}
 
 	@Override
