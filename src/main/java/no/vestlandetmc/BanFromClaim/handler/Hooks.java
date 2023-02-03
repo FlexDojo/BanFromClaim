@@ -4,7 +4,6 @@ public class Hooks {
 
 	private static boolean griefPrevention = false;
 	private static boolean griefDefender = false;
-	private static boolean regionDefence = false;
 
 	public static boolean gpEnabled() {
 		return griefPrevention;
@@ -12,10 +11,6 @@ public class Hooks {
 
 	public static boolean gdEnabled() {
 		return griefDefender;
-	}
-
-	public static boolean rdEnabled() {
-		return regionDefence;
 	}
 
 	public static void setGP() {
@@ -26,8 +21,5 @@ public class Hooks {
 		griefDefender = true;
 	}
 
-	public static void setRD() {
-		regionDefence = true;
-	}
 
 }
