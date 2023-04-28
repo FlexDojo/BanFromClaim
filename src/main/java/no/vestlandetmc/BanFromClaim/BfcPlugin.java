@@ -1,26 +1,7 @@
 package no.vestlandetmc.BanFromClaim;
 
-import java.io.File;
-import java.io.IOException;
-
-import org.bukkit.Bukkit;
-import org.bukkit.configuration.InvalidConfigurationException;
-import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scheduler.BukkitRunnable;
-
 import no.vestlandetmc.BanFromClaim.commands.SafeSpot;
-import no.vestlandetmc.BanFromClaim.commands.griefdefender.BfcAllCommandGD;
-import no.vestlandetmc.BanFromClaim.commands.griefdefender.BfcCommandGD;
-import no.vestlandetmc.BanFromClaim.commands.griefdefender.BfclistCommandGD;
-import no.vestlandetmc.BanFromClaim.commands.griefdefender.KfcCommandGD;
-import no.vestlandetmc.BanFromClaim.commands.griefdefender.UnbfcCommandGD;
-import no.vestlandetmc.BanFromClaim.commands.griefprevention.BfcAllCommand;
-import no.vestlandetmc.BanFromClaim.commands.griefprevention.BfcCommand;
-import no.vestlandetmc.BanFromClaim.commands.griefprevention.BfclistCommand;
-import no.vestlandetmc.BanFromClaim.commands.griefprevention.KfcCommandGP;
-import no.vestlandetmc.BanFromClaim.commands.griefprevention.UnbfcCommand;
+import no.vestlandetmc.BanFromClaim.commands.griefprevention.*;
 import no.vestlandetmc.BanFromClaim.config.ClaimData;
 import no.vestlandetmc.BanFromClaim.config.Config;
 import no.vestlandetmc.BanFromClaim.config.Messages;
@@ -28,9 +9,16 @@ import no.vestlandetmc.BanFromClaim.handler.CombatScheduler;
 import no.vestlandetmc.BanFromClaim.handler.Hooks;
 import no.vestlandetmc.BanFromClaim.handler.MessageHandler;
 import no.vestlandetmc.BanFromClaim.listener.CombatMode;
-import no.vestlandetmc.BanFromClaim.listener.GDListener;
 import no.vestlandetmc.BanFromClaim.listener.GPListener;
-import no.vestlandetmc.BanFromClaim.listener.PlayerListener;
+import org.bukkit.Bukkit;
+import org.bukkit.configuration.InvalidConfigurationException;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitRunnable;
+
+import java.io.File;
+import java.io.IOException;
 
 public class BfcPlugin extends JavaPlugin {
 
@@ -60,6 +48,7 @@ public class BfcPlugin extends JavaPlugin {
 			MessageHandler.sendConsole("");
 
 			Hooks.setGP();
+			Hooks.setGSIT();
 
 			this.getServer().getPluginManager().registerEvents(new GPListener(), this);
 			this.getCommand("banfromclaim").setExecutor(new BfcCommand());
@@ -71,30 +60,6 @@ public class BfcPlugin extends JavaPlugin {
 				this.getCommand("kickfromclaim").setExecutor(new KfcCommandGP());
 			}
 
-		} else if(getServer().getPluginManager().getPlugin("GriefDefender") != null) {
-			MessageHandler.sendConsole("&2[" + getDescription().getPrefix() + "] &7Successfully hooked into &eGriefDefender");
-			MessageHandler.sendConsole("");
-
-			Hooks.setGD();
-
-			this.getServer().getPluginManager().registerEvents(new GDListener(), this);
-			this.getCommand("banfromclaim").setExecutor(new BfcCommandGD());
-			this.getCommand("unbanfromclaim").setExecutor(new UnbfcCommandGD());
-			this.getCommand("banfromclaimlist").setExecutor(new BfclistCommandGD());
-			this.getCommand("banfromclaimall").setExecutor(new BfcAllCommandGD());
-
-			if(Config.KICKMODE) {
-				this.getCommand("kickfromclaim").setExecutor(new KfcCommandGD());
-			}
-
-		} else if(getServer().getPluginManager().getPlugin("RegionDefence") != null) {
-			MessageHandler.sendConsole("&2[" + getDescription().getPrefix() + "] &7Successfully hooked into &eRegionDefence");
-			MessageHandler.sendConsole("");
-
-			if(Config.KICKMODE) {
-				this.getCommand("kickfromclaim").setExecutor(new KfcCommandGD());
-			}
-
 		} else {
 			MessageHandler.sendConsole("&2[" + getDescription().getPrefix() + "] &cNo supported claimsystem was found.");
 			MessageHandler.sendConsole("");
@@ -102,7 +67,6 @@ public class BfcPlugin extends JavaPlugin {
 			return;
 		}
 
-		this.getServer().getPluginManager().registerEvents(new PlayerListener(), this);
 		this.getCommand("bfcsafespot").setExecutor(new SafeSpot());
 
 		createDatafile();

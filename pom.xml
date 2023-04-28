@@ -17,6 +17,10 @@
 
 	<repositories>
 		<repository>
+			<id>meta-repo</id>
+			<url>https://repo.metamc.it/repository/meta-repo/</url>
+		</repository>
+		<repository>
 			<id>jitpack.io</id>
 			<url>https://jitpack.io</url>
 		</repository>
@@ -28,10 +32,6 @@
 			<id>bungeecord-repo</id>
 			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
 		</repository>
-		<repository>
-			<id>glaremasters</id>
-			<url>https://repo.glaremasters.me/repository/bloodshot/</url>
-		</repository>
 	</repositories>
 
 	<dependencies>
@@ -42,15 +42,14 @@
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
+			<groupId>dev.geco.gsit</groupId>
+			<artifactId>GSit</artifactId>
+			<version>1.0</version>
+		</dependency>
+		<dependency>
 			<groupId>com.github.TechFortress</groupId>
 			<artifactId>GriefPrevention</artifactId>
 			<version>16.18</version>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.griefdefender</groupId>
-			<artifactId>api</artifactId>
-			<version>2.1.0-20220608.043832-6</version>
 			<scope>provided</scope>
 		</dependency>
 	</dependencies>

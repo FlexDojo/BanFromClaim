@@ -1,14 +1,13 @@
 package no.vestlandetmc.BanFromClaim.handler;
 
-import java.util.Map.Entry;
-import java.util.UUID;
-
+import no.vestlandetmc.BanFromClaim.config.Config;
+import no.vestlandetmc.BanFromClaim.listener.CombatMode;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import no.vestlandetmc.BanFromClaim.config.Config;
-import no.vestlandetmc.BanFromClaim.listener.CombatMode;
+import java.util.Map.Entry;
+import java.util.UUID;
 
 public class CombatScheduler extends BukkitRunnable {
 

@@ -1,5 +1,9 @@
 package no.vestlandetmc.BanFromClaim.config;
 
+import no.vestlandetmc.BanFromClaim.BfcPlugin;
+import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.plugin.java.JavaPlugin;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -10,11 +14,6 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.HashSet;
 import java.util.Set;
-
-import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.plugin.java.JavaPlugin;
-
-import no.vestlandetmc.BanFromClaim.BfcPlugin;
 
 public class ConfigHandler extends YamlConfiguration {
 

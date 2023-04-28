@@ -1,18 +1,14 @@
 package no.vestlandetmc.BanFromClaim.handler;
 
-import java.util.UUID;
-
+import me.ryanhamshire.GriefPrevention.DataStore;
+import me.ryanhamshire.GriefPrevention.GriefPrevention;
+import no.vestlandetmc.BanFromClaim.BfcPlugin;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 
-import com.griefdefender.api.Core;
-import com.griefdefender.api.GriefDefender;
-
-import me.ryanhamshire.GriefPrevention.DataStore;
-import me.ryanhamshire.GriefPrevention.GriefPrevention;
-import no.vestlandetmc.BanFromClaim.BfcPlugin;
+import java.util.UUID;
 
 public class LocationFinder {
 
@@ -87,12 +83,6 @@ public class LocationFinder {
 			final DataStore griefPreventionCore = GriefPrevention.instance.dataStore;
 			return griefPreventionCore.getClaimAt(loc, true, null) != null;
 		}
-
-		else if(Hooks.gdEnabled()) {
-			final Core griefDefenderCore = GriefDefender.getCore();
-			return !griefDefenderCore.getClaimAt(loc).isWilderness();
-		}
-
 
 		else {
 			return false;

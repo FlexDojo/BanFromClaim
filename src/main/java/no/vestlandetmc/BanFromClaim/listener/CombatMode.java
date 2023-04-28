@@ -1,12 +1,12 @@
 package no.vestlandetmc.BanFromClaim.listener;
 
-import java.util.HashMap;
-import java.util.UUID;
-
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+
+import java.util.HashMap;
+import java.util.UUID;
 
 public class CombatMode implements Listener {
 
@@ -35,19 +35,6 @@ public class CombatMode implements Listener {
 	public static UUID getAttacker(UUID uuid) {
 		if(ATTACKER.containsKey(uuid)) { return ATTACKER.get(uuid); }
 		else { return null; }
-	}
-
-	public static long getTime(UUID uuid) {
-		if(TIME.containsKey(uuid)) { return TIME.get(uuid); }
-		else { return 0; }
-	}
-
-	public static void registerTime(UUID uuid, long time) {
-		TIME.put(uuid, time);
-	}
-
-	public static void registerAttacker(UUID victim, UUID attacker) {
-		ATTACKER.put(victim, attacker);
 	}
 
 	public static void removeTime(UUID uuid) {

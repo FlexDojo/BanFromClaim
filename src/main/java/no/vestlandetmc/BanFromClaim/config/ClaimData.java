@@ -1,21 +1,19 @@
 package no.vestlandetmc.BanFromClaim.config;
 
+import com.griefdefender.api.Core;
+import com.griefdefender.api.GriefDefender;
+import com.griefdefender.api.claim.Claim;
+import me.ryanhamshire.GriefPrevention.GriefPrevention;
+import no.vestlandetmc.BanFromClaim.BfcPlugin;
+import no.vestlandetmc.BanFromClaim.handler.MessageHandler;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.entity.Player;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-
-import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.entity.Player;
-
-import com.griefdefender.api.Core;
-import com.griefdefender.api.GriefDefender;
-import com.griefdefender.api.claim.Claim;
-
-import me.ryanhamshire.GriefPrevention.GriefPrevention;
-import no.vestlandetmc.BanFromClaim.BfcPlugin;
-import no.vestlandetmc.BanFromClaim.handler.MessageHandler;
 
 public class ClaimData {
 

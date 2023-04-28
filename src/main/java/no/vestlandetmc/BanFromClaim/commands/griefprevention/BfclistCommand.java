@@ -1,8 +1,10 @@
 package no.vestlandetmc.BanFromClaim.commands.griefprevention;
 
-import java.util.List;
-import java.util.UUID;
-
+import me.ryanhamshire.GriefPrevention.Claim;
+import me.ryanhamshire.GriefPrevention.GriefPrevention;
+import no.vestlandetmc.BanFromClaim.config.ClaimData;
+import no.vestlandetmc.BanFromClaim.config.Messages;
+import no.vestlandetmc.BanFromClaim.handler.MessageHandler;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
@@ -11,11 +13,8 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import me.ryanhamshire.GriefPrevention.Claim;
-import me.ryanhamshire.GriefPrevention.GriefPrevention;
-import no.vestlandetmc.BanFromClaim.config.ClaimData;
-import no.vestlandetmc.BanFromClaim.config.Messages;
-import no.vestlandetmc.BanFromClaim.handler.MessageHandler;
+import java.util.List;
+import java.util.UUID;
 
 public class BfclistCommand implements CommandExecutor {
 

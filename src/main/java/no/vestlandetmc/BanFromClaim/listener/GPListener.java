@@ -1,16 +1,7 @@
 package no.vestlandetmc.BanFromClaim.listener;
 
-import java.util.UUID;
-
-import org.bukkit.Bukkit;
-import org.bukkit.GameMode;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerMoveEvent;
-
+import dev.geco.gsit.api.GSitAPI;
+import dev.geco.gsit.objects.GetUpReason;
 import me.ryanhamshire.GriefPrevention.Claim;
 import me.ryanhamshire.GriefPrevention.GriefPrevention;
 import no.vestlandetmc.BanFromClaim.BfcPlugin;
@@ -20,12 +11,23 @@ import no.vestlandetmc.BanFromClaim.config.Messages;
 import no.vestlandetmc.BanFromClaim.handler.LocationFinder;
 import no.vestlandetmc.BanFromClaim.handler.MessageHandler;
 import no.vestlandetmc.BanFromClaim.handler.ParticleHandler;
+import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerMoveEvent;
+
+import java.util.UUID;
 
 public class GPListener implements Listener {
 
 	@EventHandler(ignoreCancelled = true)
 	public void onPlayerEnterClaim(PlayerMoveEvent e) {
 		final ClaimData claimData = new ClaimData();
+		final GSitAPI gsit = new GSitAPI();
 		final Location locFrom = e.getFrom();
 		final Location locTo = e.getTo();
 
@@ -96,10 +98,16 @@ public class GPListener implements Listener {
 					}, 5L * 20L);
 				}
 			}
-
+			if (gsit.isSitting(player)) {
+				System.out.println("Player is sitting in claim");
+				gsit.removeSeat(player, GetUpReason.PLUGIN);
+				System.out.println("Player is no longer sitting in claim");
+			}
 		}
 
 	}
+
+
 
 	private boolean playerBanned(Player player, String claimID) {
 		final ClaimData claimData = new ClaimData();

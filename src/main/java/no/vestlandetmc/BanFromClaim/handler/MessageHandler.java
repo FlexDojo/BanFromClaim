@@ -1,14 +1,13 @@
 package no.vestlandetmc.BanFromClaim.handler;
 
-import java.util.ArrayList;
-
+import net.md_5.bungee.api.ChatMessageType;
+import net.md_5.bungee.api.chat.TextComponent;
+import no.vestlandetmc.BanFromClaim.BfcPlugin;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
-import net.md_5.bungee.api.ChatMessageType;
-import net.md_5.bungee.api.chat.TextComponent;
-import no.vestlandetmc.BanFromClaim.BfcPlugin;
+import java.util.ArrayList;
 
 public class MessageHandler {
 
