@@ -24,7 +24,7 @@ public class BfcAllCommand implements CommandExecutor {
 		final Player player = (Player) sender;
 		final Location loc = player.getLocation();
 		final Claim claim = GriefPrevention.instance.dataStore.getClaimAt(loc, true, null);
-		final ClaimData claimData = new ClaimData();
+		final ClaimData claimData = ClaimData.getInstance();
 
 		if(claim == null) {
 			MessageHandler.sendMessage(player, Messages.OUTSIDE_CLAIM);

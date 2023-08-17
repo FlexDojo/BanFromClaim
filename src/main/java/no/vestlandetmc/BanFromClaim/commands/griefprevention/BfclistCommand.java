@@ -32,7 +32,7 @@ public class BfclistCommand implements CommandExecutor {
 		final Player player = (Player) sender;
 		final Location loc = player.getLocation();
 		final Claim claim = GriefPrevention.instance.dataStore.getClaimAt(loc, true, null);
-		final ClaimData claimData = new ClaimData();
+		final ClaimData claimData = ClaimData.getInstance();
 
 		if(args.length != 0) {
 			if(isInt(args[0])) {
@@ -110,7 +110,7 @@ public class BfclistCommand implements CommandExecutor {
 	}
 
 	private List<String> listPlayers(String claimID) {
-		final ClaimData claimData = new ClaimData();
+		final ClaimData claimData = ClaimData.getInstance();
 
 		return claimData.bannedPlayers(claimID);
 	}

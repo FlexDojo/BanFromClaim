@@ -22,97 +22,107 @@ import java.io.IOException;
 
 public class BfcPlugin extends JavaPlugin {
 
-	private static BfcPlugin instance;
+    private static BfcPlugin instance;
 
-	private File dataFile;
-	private FileConfiguration data;
+    private File dataFile;
+    private FileConfiguration data;
 
-	public static BfcPlugin getInstance() {
-		return instance;
-	}
+    public static BfcPlugin getInstance() {
+        return instance;
+    }
 
-	@Override
-	public void onEnable() {
-		instance = this;
+    @Override
+    public void onEnable() {
+        instance = this;
 
-		MessageHandler.sendConsole("&2 ___ ___ ___");
-		MessageHandler.sendConsole("&2| _ ) __/ __|        &8" + getDescription().getName() + " v" + getDescription().getVersion());
-		MessageHandler.sendConsole("&2| _ \\ _| (__         &8Author: " + getDescription().getAuthors().toString().replace("[", "").replace("]", ""));
-		MessageHandler.sendConsole("&2|___/_| \\___|");
-		MessageHandler.sendConsole("");
+        MessageHandler.sendConsole("&2 ___ ___ ___");
+        MessageHandler.sendConsole("&2| _ ) __/ __|        &8" + getDescription().getName() + " v" + getDescription().getVersion());
+        MessageHandler.sendConsole("&2| _ \\ _| (__         &8Author: " + getDescription().getAuthors().toString().replace("[", "").replace("]", ""));
+        MessageHandler.sendConsole("&2|___/_| \\___|");
+        MessageHandler.sendConsole("");
 
-		Config.initialize();
+        createDatafile();
 
-		if(getServer().getPluginManager().getPlugin("GriefPrevention") != null) {
-			MessageHandler.sendConsole("&2[" + getDescription().getPrefix() + "] &7Successfully hooked into &eGriefPrevention");
-			MessageHandler.sendConsole("");
+        Config.initialize();
 
-			Hooks.setGP();
-			Hooks.setGSIT();
+        if (getServer().getPluginManager().getPlugin("GriefPrevention") != null) {
+            MessageHandler.sendConsole("&2[" + getDescription().getPrefix() + "] &7Successfully hooked into &eGriefPrevention");
+            MessageHandler.sendConsole("");
 
-			this.getServer().getPluginManager().registerEvents(new GPListener(), this);
-			this.getCommand("banfromclaim").setExecutor(new BfcCommand());
-			this.getCommand("unbanfromclaim").setExecutor(new UnbfcCommand());
-			this.getCommand("banfromclaimlist").setExecutor(new BfclistCommand());
-			this.getCommand("banfromclaimall").setExecutor(new BfcAllCommand());
+            Hooks.setGP();
+            Hooks.setGSIT();
 
-			if(Config.KICKMODE) {
-				this.getCommand("kickfromclaim").setExecutor(new KfcCommandGP());
-			}
+            this.getServer().getPluginManager().registerEvents(new GPListener(this), this);
+            BfcCommand gpCommand = new BfcCommand();
+            this.getCommand("banfromclaim").setExecutor(gpCommand);
+            this.getCommand("banfromclaim").setTabCompleter(gpCommand);
 
-		} else {
-			MessageHandler.sendConsole("&2[" + getDescription().getPrefix() + "] &cNo supported claimsystem was found.");
-			MessageHandler.sendConsole("");
-			Bukkit.getPluginManager().disablePlugin(this);
-			return;
-		}
+            UnbfcCommand unbfcCommand = new UnbfcCommand();
+            this.getCommand("unbanfromclaim").setExecutor(unbfcCommand);
+            this.getCommand("unbanfromclaim").setTabCompleter(unbfcCommand);
 
-		this.getCommand("bfcsafespot").setExecutor(new SafeSpot());
+            this.getCommand("banfromclaimlist").setExecutor(new BfclistCommand());
+            this.getCommand("banfromclaimall").setExecutor(new BfcAllCommand());
 
-		createDatafile();
-		Messages.initialize();
-		ClaimData.createSection();
+            if (Config.KICKMODE) {
+                KfcCommandGP kfcCommandGP = new KfcCommandGP();
+                this.getCommand("kickfromclaim").setExecutor(kfcCommandGP);
+                this.getCommand("kickfromclaim").setTabCompleter(kfcCommandGP);
+            }
 
-		if(Config.COMBAT_ENABLED) {
-			this.getServer().getPluginManager().registerEvents(new CombatMode(), this);
-			new CombatScheduler().runTaskTimer(this, 0L, 20L);
-		}
+        } else {
+            MessageHandler.sendConsole("&2[" + getDescription().getPrefix() + "] &cNo supported claimsystem was found.");
+            MessageHandler.sendConsole("");
+            Bukkit.getPluginManager().disablePlugin(this);
+            return;
+        }
 
-		new BukkitRunnable() {
-			@Override
-			public void run() {
-				ClaimData.cleanDatafile();
-			}
+        this.getCommand("bfcsafespot").setExecutor(new SafeSpot());
 
-		}.runTaskTimer(this, 30 * 20L, 3600 * 20L);
 
-	}
+        Messages.initialize();
+        ClaimData.createSection();
 
-	@Override
-	public void onDisable() {
+        if (Config.COMBAT_ENABLED) {
+            this.getServer().getPluginManager().registerEvents(new CombatMode(), this);
+            new CombatScheduler().runTaskTimer(this, 0L, 20L);
+        }
 
-	}
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                ClaimData.cleanDatafile();
+            }
 
-	public FileConfiguration getDataFile() {
-		return this.data;
-	}
+        }.runTaskTimer(this, 30 * 20L, 3600 * 20L);
 
-	public void createDatafile() {
-		dataFile = new File(this.getDataFolder(), "data.dat");
-		if (!dataFile.exists()) {
-			dataFile.getParentFile().mkdirs();
-			try {
-				dataFile.createNewFile();
-			} catch (final IOException e) {
-				e.printStackTrace();
-			}
-		}
+    }
 
-		data = new YamlConfiguration();
-		try {
-			data.load(dataFile);
-		} catch (IOException | InvalidConfigurationException e) {
-			e.printStackTrace();
-		}
-	}
+    @Override
+    public void onDisable() {
+
+    }
+
+    public FileConfiguration getDataFile() {
+        return this.data;
+    }
+
+    public void createDatafile() {
+        dataFile = new File(this.getDataFolder(), "data.dat");
+        if (!dataFile.exists()) {
+            dataFile.getParentFile().mkdirs();
+            try {
+                dataFile.createNewFile();
+            } catch (final IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        data = new YamlConfiguration();
+        try {
+            data.load(dataFile);
+        } catch (IOException | InvalidConfigurationException e) {
+            e.printStackTrace();
+        }
+    }
 }

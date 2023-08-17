@@ -18,118 +18,167 @@ import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.event.player.PlayerTeleportEvent;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 
 public class GPListener implements Listener {
 
-	@EventHandler(ignoreCancelled = true)
-	public void onPlayerEnterClaim(PlayerMoveEvent e) {
-		final ClaimData claimData = new ClaimData();
-		final GSitAPI gsit = new GSitAPI();
-		final Location locFrom = e.getFrom();
-		final Location locTo = e.getTo();
+    private final BfcPlugin plugin;
+    private final ClaimData claimData;
+    private final Map<UUID, Location> lastLocation;
 
-		if(locFrom.getBlock().equals(locTo.getBlock())) { return; }
+    public GPListener(BfcPlugin plugin) {
+        this.plugin = plugin;
+        this.claimData = ClaimData.getInstance();
+        this.lastLocation = new HashMap<>();
+    }
 
-		final Player player = e.getPlayer();
-		final Claim claim = GriefPrevention.instance.dataStore.getClaimAt(locTo, true, null);
-		final ParticleHandler ph = new ParticleHandler(e.getTo());
+    @EventHandler
+    public void onJoin(PlayerJoinEvent e) {
+        Location loc = e.getPlayer().getLocation();
 
-		if(player.hasPermission("bfc.bypass") || player.getGameMode().equals(GameMode.SPECTATOR)) { return; }
+        checkBan(e.getPlayer(), loc, loc, true);
+    }
 
-		if(claim != null) {
-			final UUID ownerUUID =  claim.ownerID;
-			final String claimID = claim.getID().toString();
-			boolean hasAttacked = false;
+    @EventHandler
+    public void onTeleport(PlayerTeleportEvent e) {
+        Location loc = e.getTo();
+        Player player = e.getPlayer();
+        boolean check = checkBan(player, e.getFrom(), loc, false);
+        if (check) {
+            e.setCancelled(true);
+        }
+    }
 
-			if(CombatMode.attackerContains(player.getUniqueId()))
-				hasAttacked = CombatMode.getAttacker(player.getUniqueId()).equals(ownerUUID);
+    private boolean checkBan(Player player, Location locFrom, Location locTo, boolean tp) {
+        final Claim claim = GriefPrevention.instance.dataStore.getClaimAt(locTo, true, null);
 
-			if((claimData.isAllBanned(claimID) || playerBanned(player, claimID)) && !hasAttacked && !hasTrust(player, claim)) {
-				if(claim.contains(locFrom, true, false)) {
-					if(playerBanned(player, claimID) || claimData.isAllBanned(claimID)) {
-						final int sizeRadius = Math.max(claim.getHeight(), claim.getWidth());
+        if (claim == null) return false;
 
-						final LocationFinder lf = new LocationFinder(claim.getGreaterBoundaryCorner(), claim.getLesserBoundaryCorner(), player.getWorld().getUID(), sizeRadius);
-						Bukkit.getScheduler().runTaskAsynchronously(BfcPlugin.getInstance(), () -> lf.IterateCircumferences(randomCircumferenceRadiusLoc -> {
-							if(randomCircumferenceRadiusLoc == null) {
-								if(Config.SAFE_LOCATION == null) { player.teleport(player.getWorld().getSpawnLocation()); }
-								else { player.teleport(Config.SAFE_LOCATION); }
-							}
-							else { player.teleport(randomCircumferenceRadiusLoc);	}
+        final ParticleHandler ph = new ParticleHandler(locTo);
 
-						}));
+        if (player.hasPermission("bfc.bypass") || player.getGameMode().equals(GameMode.SPECTATOR)) {
+            return false;
+        }
 
-					} else {
-						final Location tpLoc = player.getLocation().add(e.getFrom().toVector().subtract(e.getTo().toVector()).normalize().multiply(3));
+        final UUID ownerUUID = claim.ownerID;
+        final String claimID = claim.getID().toString();
+        boolean hasAttacked = false;
 
-						if(tpLoc.getBlock().getType().equals(Material.AIR)) {
-							player.teleport(tpLoc);
-						}
-						else {
-							final Location safeLoc = tpLoc.getWorld().getHighestBlockAt(tpLoc).getLocation().add(0D, 1D, 0D);
-							player.teleport(safeLoc);
-						}
+        if (CombatMode.attackerContains(player.getUniqueId()))
+            hasAttacked = CombatMode.getAttacker(player.getUniqueId()).equals(ownerUUID);
 
-						if(e.getTo().getBlockX() == e.getFrom().getBlockX()) { ph.drawCircle(1, true); }
-						else { ph.drawCircle(1, false); }
-					}
+        if ((claimData.isAllBanned(claimID) || playerBanned(player, claimID)) && !hasAttacked && !hasTrust(player, claim)) {
+            if (claim.contains(locFrom, true, false)) {
+                if (playerBanned(player, claimID) || claimData.isAllBanned(claimID)) {
+                    final int sizeRadius = Math.max(claim.getHeight(), claim.getWidth());
 
-				} else {
-					final Location tpLoc = player.getLocation().add(e.getFrom().toVector().subtract(e.getTo().toVector()).normalize().multiply(3));
-					if(tpLoc.getBlock().getType().equals(Material.AIR)) { player.teleport(tpLoc); }
-					else {
-						final Location safeLoc = tpLoc.getWorld().getHighestBlockAt(tpLoc).getLocation().add(0D, 1D, 0D);
-						player.teleport(safeLoc);
-					}
+                    if (tp) {
+                        final LocationFinder lf = new LocationFinder(claim.getGreaterBoundaryCorner(), claim.getLesserBoundaryCorner(), player.getWorld().getUID(), sizeRadius);
+                        Bukkit.getScheduler().runTaskAsynchronously(BfcPlugin.getInstance(), () -> lf.IterateCircumferences(randomCircumferenceRadiusLoc -> {
+                            player.teleport(Objects.requireNonNullElseGet(randomCircumferenceRadiusLoc, () -> Objects.requireNonNullElseGet(Config.SAFE_LOCATION, () -> player.getWorld().getSpawnLocation())));
 
-					if(e.getTo().getBlockX() == e.getFrom().getBlockX()) { ph.drawCircle(1, true); }
-					else { ph.drawCircle(1, false); }
-				}
+                        }));
+                    }
+                } else {
+                    if (tp) {
+                        final Location tpLoc = player.getLocation().add(locFrom.toVector().subtract(locTo.toVector()).normalize().multiply(3));
 
-				if(!MessageHandler.spamMessageClaim.contains(player.getUniqueId().toString())) {
-					MessageHandler.sendTitle(player, Messages.TITLE_MESSAGE, Messages.SUBTITLE_MESSAGE);
-					MessageHandler.spamMessageClaim.add(player.getUniqueId().toString());
+                        if (tpLoc.getBlock().getType().equals(Material.AIR)) {
+                            player.teleport(tpLoc);
+                        } else {
+                            final Location safeLoc = tpLoc.getWorld().getHighestBlockAt(tpLoc).getLocation().add(0D, 1D, 0D);
+                            player.teleport(safeLoc);
+                        }
 
-					Bukkit.getScheduler().runTaskLater(BfcPlugin.getInstance(), () -> {
-						MessageHandler.spamMessageClaim.remove(player.getUniqueId().toString());
-					}, 5L * 20L);
-				}
-			}
-			if (gsit.isSitting(player)) {
-				System.out.println("Player is sitting in claim");
-				gsit.removeSeat(player, GetUpReason.PLUGIN);
-				System.out.println("Player is no longer sitting in claim");
-			}
-		}
+                        ph.drawCircle(1, locTo.getBlockX() == locFrom.getBlockX());
+                    }
+                }
 
-	}
+            } else {
+                if(tp) {
+                    final Location tpLoc = player.getLocation().add(locFrom.toVector().subtract(locTo.toVector()).normalize().multiply(3));
+                    if (tpLoc.getBlock().getType().equals(Material.AIR)) {
+                        player.teleport(tpLoc);
+                    } else {
+                        final Location safeLoc = tpLoc.getWorld().getHighestBlockAt(tpLoc).getLocation().add(0D, 1D, 0D);
+                        player.teleport(safeLoc);
+                    }
+
+                    ph.drawCircle(1, locTo.getBlockX() == locFrom.getBlockX());
+                }
+            }
 
 
+            if (!MessageHandler.spamMessageClaim.contains(player.getUniqueId().toString())) {
+                MessageHandler.sendTitle(player, Messages.TITLE_MESSAGE, Messages.SUBTITLE_MESSAGE);
+                MessageHandler.spamMessageClaim.add(player.getUniqueId().toString());
 
-	private boolean playerBanned(Player player, String claimID) {
-		final ClaimData claimData = new ClaimData();
-		if(claimData.checkClaim(claimID)) {
-			if(claimData.bannedPlayers(claimID) != null) {
-				for(final String bp : claimData.bannedPlayers(claimID)) {
-					if(bp.equals(player.getUniqueId().toString())) {
-						return true;
-					}
-				}
-			}
-		}
+                Bukkit.getScheduler().runTaskLater(BfcPlugin.getInstance(), () -> {
+                    MessageHandler.spamMessageClaim.remove(player.getUniqueId().toString());
+                }, 5L * 20L);
+            }
+            return true;
+        }
+        if (GSitAPI.isSitting(player)) {
+            GSitAPI.removeSeat(player, GetUpReason.PLUGIN);
+        }
 
-		return false;
-	}
+        return false;
+    }
 
-	@SuppressWarnings("deprecation")
-	private boolean hasTrust(Player player, Claim claim) {
-		final String accessDenied = claim.allowGrantPermission(player);
-		final String buildDenied = claim.allowBuild(player, Material.DIRT);
+    @EventHandler(ignoreCancelled = true)
+    public void onPlayerEnterClaim(PlayerMoveEvent e) {
+        final Location locFrom = e.getFrom();
+        final Location locTo = e.getTo();
 
-		if(accessDenied == null || buildDenied == null || player.getUniqueId().equals(claim.getOwnerID())) { return true; }
-		else { return false; }
-	}
+        if (locTo == null || locTo.getWorld() == null) return;
+
+        if (locTo.getBlockY() > locTo.getWorld().getMaxHeight() + 10) return;
+
+        if (lastLocation.getOrDefault(e.getPlayer().getUniqueId(), locFrom).equals(locTo)) return;
+        else lastLocation.put(e.getPlayer().getUniqueId(), locTo);
+
+        if (locFrom.getBlock().equals(locTo.getBlock())) {
+            return;
+        }
+
+        final Player player = e.getPlayer();
+
+        checkBan(player, locFrom, locTo, true);
+    }
+
+
+    private boolean playerBanned(Player player, String claimID) {
+        final ClaimData claimData = ClaimData.getInstance();
+        if (claimData.checkClaim(claimID)) {
+            if (claimData.bannedPlayers(claimID) != null) {
+                for (final String bp : claimData.bannedPlayers(claimID)) {
+                    if (bp.equals(player.getUniqueId().toString())) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
+    @SuppressWarnings("deprecation")
+    private boolean hasTrust(Player player, Claim claim) {
+        final String accessDenied = claim.allowGrantPermission(player);
+        final String buildDenied = claim.allowBuild(player, Material.DIRT);
+
+        if (accessDenied == null || buildDenied == null || player.getUniqueId().equals(claim.getOwnerID())) {
+            return true;
+        } else {
+            return false;
+        }
+    }
 }

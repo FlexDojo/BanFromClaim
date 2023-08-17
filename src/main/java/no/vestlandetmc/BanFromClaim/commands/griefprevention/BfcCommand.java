@@ -1,5 +1,6 @@
 package no.vestlandetmc.BanFromClaim.commands.griefprevention;
 
+import com.nextdevv.metacoin.api.GettoniAPI;
 import me.ryanhamshire.GriefPrevention.Claim;
 import me.ryanhamshire.GriefPrevention.GriefPrevention;
 import no.vestlandetmc.BanFromClaim.BfcPlugin;
@@ -14,9 +15,14 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
+import org.bukkit.util.StringUtil;
 
-public class BfcCommand implements CommandExecutor {
+import java.util.ArrayList;
+import java.util.List;
+
+public class BfcCommand implements CommandExecutor, TabCompleter {
 
 	@SuppressWarnings("deprecation")
 	@Override
@@ -106,9 +112,14 @@ public class BfcCommand implements CommandExecutor {
 	}
 
 	private boolean setClaimData(Player player, String claimID, String bannedUUID, boolean add) {
-		final ClaimData claimData = new ClaimData();
+		final ClaimData claimData = ClaimData.getInstance();
 
 		return claimData.setClaimData(player, claimID, bannedUUID, add);
+	}
+
+	@Override
+	public List<String> onTabComplete(CommandSender commandSender, Command command, String s, String[] strings) {
+		return StringUtil.copyPartialMatches(strings[0], GettoniAPI.getInstance().getAllNames(), new ArrayList<>());
 	}
 
 }
