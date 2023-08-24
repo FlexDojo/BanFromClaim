@@ -21,6 +21,7 @@ import org.bukkit.util.StringUtil;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class BfcCommand implements CommandExecutor, TabCompleter {
 
@@ -46,68 +47,80 @@ public class BfcCommand implements CommandExecutor, TabCompleter {
 			return true;
 		}
 
-		final OfflinePlayer bannedPlayer = Bukkit.getOfflinePlayer(args[0]);
-		final String accessDenied = claim.allowGrantPermission(player);
-		boolean allowBan = false;
+		GettoniAPI.getInstance().getName(args[0]).thenAccept(u -> {
 
-		if(accessDenied == null) { allowBan = true; }
-		if(player.hasPermission("bfc.admin")) { allowBan = true; }
 
-		if(!bannedPlayer.isOnline()) {
-			if(!bannedPlayer.hasPlayedBefore()) {
+			if(u==null) {
 				MessageHandler.sendMessage(player, Messages.placeholders(Messages.UNVALID_PLAYERNAME, args[0], player.getDisplayName(), null));
-				return true;
-			} else if(bannedPlayer == player) {
-				MessageHandler.sendMessage(player, Messages.BAN_SELF);
-				return true;
-			} else if(bannedPlayer.getName().equals(claim.getOwnerName())) {
-				MessageHandler.sendMessage(player, Messages.BAN_OWNER);
-				return true;
+				return;
 			}
-		} else {
-			if(bannedPlayer.getPlayer().hasPermission("bfc.bypass")) {
-				MessageHandler.sendMessage(player, Messages.placeholders(Messages.PROTECTED, bannedPlayer.getPlayer().getDisplayName(), null, null));
-				return true;
-			}
-		}
 
-		if(!allowBan) {
-			MessageHandler.sendMessage(player, Messages.NO_ACCESS);
-			return true;
-		} else {
-			final String claimOwner = claim.getOwnerName();
+			Bukkit.getScheduler().runTask(BfcPlugin.getInstance(), () -> {
+				final OfflinePlayer bannedPlayer = Bukkit.getOfflinePlayer(u);
+				final String accessDenied = claim.allowGrantPermission(player);
+				boolean allowBan = accessDenied == null;
 
-			final int sizeRadius = Math.max(claim.getHeight(), claim.getWidth());
-			final Location greaterCorner = claim.getGreaterBoundaryCorner();
-			final Location lesserCorner = claim.getLesserBoundaryCorner();
+				if(player.hasPermission("bfc.admin")) { allowBan = true; }
 
-			if(setClaimData(player, claim.getID().toString(), bannedPlayer.getUniqueId().toString(), true)) {
-				if(bannedPlayer.isOnline()) {
-					if(GriefPrevention.instance.dataStore.getClaimAt(bannedPlayer.getPlayer().getLocation(), true, claim) != null) {
-						if(GriefPrevention.instance.dataStore.getClaimAt(bannedPlayer.getPlayer().getLocation(), true, claim) == claim) {
-							final Location bannedLoc = bannedPlayer.getPlayer().getLocation();
-							final LocationFinder lf = new LocationFinder(greaterCorner, lesserCorner, bannedLoc.getWorld().getUID(), sizeRadius);
-
-							Bukkit.getScheduler().runTaskAsynchronously(BfcPlugin.getInstance(), () -> lf.IterateCircumferences(randomCircumferenceRadiusLoc -> {
-								if(randomCircumferenceRadiusLoc == null) {
-									if(Config.SAFE_LOCATION == null) { bannedPlayer.getPlayer().teleport(bannedLoc.getWorld().getSpawnLocation()); }
-									else { bannedPlayer.getPlayer().teleport(Config.SAFE_LOCATION); }
-								}
-								else { bannedPlayer.getPlayer().teleport(randomCircumferenceRadiusLoc);	}
-
-								MessageHandler.sendMessage(bannedPlayer.getPlayer(), Messages.placeholders(Messages.BANNED_TARGET, bannedPlayer.getName(), player.getDisplayName(), claimOwner));
-
-							}));
-						}
+				if(!bannedPlayer.isOnline()) {
+					if(!bannedPlayer.hasPlayedBefore()) {
+						MessageHandler.sendMessage(player, Messages.placeholders(Messages.UNVALID_PLAYERNAME, args[0], player.getDisplayName(), null));
+						return;
+					} else if(bannedPlayer == player) {
+						MessageHandler.sendMessage(player, Messages.BAN_SELF);
+						return;
+					} else if(bannedPlayer.getName().equals(claim.getOwnerName())) {
+						MessageHandler.sendMessage(player, Messages.BAN_OWNER);
+						return;
+					}
+				} else {
+					if(bannedPlayer.getPlayer().hasPermission("bfc.bypass")) {
+						MessageHandler.sendMessage(player, Messages.placeholders(Messages.PROTECTED, bannedPlayer.getPlayer().getDisplayName(), null, null));
+						return;
 					}
 				}
 
-				MessageHandler.sendMessage(player, Messages.placeholders(Messages.BANNED, bannedPlayer.getName(), null, null));
+				if(!allowBan) {
+					MessageHandler.sendMessage(player, Messages.NO_ACCESS);
+					return;
+				} else {
+					final String claimOwner = claim.getOwnerName();
 
-			} else {
-				MessageHandler.sendMessage(player, Messages.ALREADY_BANNED);
-			}
-		}
+					final int sizeRadius = Math.max(claim.getHeight(), claim.getWidth());
+					final Location greaterCorner = claim.getGreaterBoundaryCorner();
+					final Location lesserCorner = claim.getLesserBoundaryCorner();
+
+					if(setClaimData(player, claim.getID().toString(), bannedPlayer.getUniqueId().toString(), true)) {
+						if(bannedPlayer.isOnline()) {
+							if(GriefPrevention.instance.dataStore.getClaimAt(bannedPlayer.getPlayer().getLocation(), true, claim) != null) {
+								if(GriefPrevention.instance.dataStore.getClaimAt(bannedPlayer.getPlayer().getLocation(), true, claim) == claim) {
+									final Location bannedLoc = bannedPlayer.getPlayer().getLocation();
+									final LocationFinder lf = new LocationFinder(greaterCorner, lesserCorner, bannedLoc.getWorld().getUID(), sizeRadius);
+
+									Bukkit.getScheduler().runTaskAsynchronously(BfcPlugin.getInstance(), () -> lf.IterateCircumferences(randomCircumferenceRadiusLoc -> {
+                                        bannedPlayer.getPlayer().teleport(Objects.requireNonNullElseGet(randomCircumferenceRadiusLoc, () -> Objects.requireNonNullElseGet(Config.SAFE_LOCATION, () -> bannedLoc.getWorld().getSpawnLocation())));
+
+										MessageHandler.sendMessage(bannedPlayer.getPlayer(), Messages.placeholders(Messages.BANNED_TARGET, bannedPlayer.getName(), player.getDisplayName(), claimOwner));
+
+									}));
+								}
+							}
+						}
+
+						MessageHandler.sendMessage(player, Messages.placeholders(Messages.BANNED, bannedPlayer.getName(), null, null));
+
+					} else {
+						MessageHandler.sendMessage(player, Messages.ALREADY_BANNED);
+					}
+				}
+			});
+		}).exceptionally(e -> {
+			MessageHandler.sendMessage(player, Messages.placeholders(Messages.UNVALID_PLAYERNAME, args[0], player.getDisplayName(), null));
+			BfcPlugin.getInstance().getLogger().log(java.util.logging.Level.SEVERE, "An error occurred while trying to ban a player from a claim.", e);
+			return null;
+		});
+
+
 		return true;
 	}
 
