@@ -1,7 +1,5 @@
 package no.vestlandetmc.BanFromClaim.listener;
 
-import dev.geco.gsit.api.GSitAPI;
-import dev.geco.gsit.objects.GetUpReason;
 import me.ryanhamshire.GriefPrevention.Claim;
 import me.ryanhamshire.GriefPrevention.GriefPrevention;
 import no.vestlandetmc.BanFromClaim.BfcPlugin;
@@ -15,6 +13,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -102,7 +101,7 @@ public class GPListener implements Listener {
                 }
 
             } else {
-                if(tp) {
+                if (tp) {
                     final Location tpLoc = player.getLocation().add(locFrom.toVector().subtract(locTo.toVector()).normalize().multiply(3));
                     if (tpLoc.getBlock().getType().equals(Material.AIR)) {
                         player.teleport(tpLoc);
@@ -125,9 +124,6 @@ public class GPListener implements Listener {
                 }, 5L * 20L);
             }
             return true;
-        }
-        if (GSitAPI.isSitting(player)) {
-            GSitAPI.removeSeat(player, GetUpReason.PLUGIN);
         }
 
         return false;
@@ -152,6 +148,8 @@ public class GPListener implements Listener {
         final Player player = e.getPlayer();
 
         checkBan(player, locFrom, locTo, true);
+        removePassengers(player, GriefPrevention.instance.dataStore.getClaimAt(locTo, false, null));
+
     }
 
 
@@ -181,4 +179,13 @@ public class GPListener implements Listener {
             return false;
         }
     }
-}
+
+    private void removePassengers(Player player, Claim claim) {
+        claim = GriefPrevention.instance.dataStore.getClaimAt(player.getLocation(), false, null);
+        if (player.getPassengers().size() != 0) {
+            for (Entity entity : player.getPassengers()) {
+                        player.removePassenger(entity);
+                    }
+                }
+            }
+        }
