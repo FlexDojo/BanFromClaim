@@ -155,8 +155,6 @@ public class GPListener implements Listener {
     }
 
 
-
-
     private boolean playerBanned(Player player, String claimID) {
         final ClaimData claimData = ClaimData.getInstance();
         if (claimData.checkClaim(claimID)) {
@@ -187,8 +185,8 @@ public class GPListener implements Listener {
     private void removePassengers(Player player) {
         if (player.getPassengers().size() != 0) {
             for (Entity entity : player.getPassengers()) {
-                        player.removePassenger(entity);
-                    }
-                }
+                player.removePassenger(entity);
             }
         }
+    }
+}
