@@ -55,10 +55,35 @@ public class GPListener implements Listener {
         }
     }
 
+    @EventHandler(ignoreCancelled = true)
+    public void onPlayerEnterClaim(PlayerMoveEvent e) {
+        final Location locFrom = e.getFrom();
+        final Location locTo = e.getTo();
+
+        if (locTo == null || locTo.getWorld() == null) return;
+
+        if (locTo.getBlockY() > locTo.getWorld().getMaxHeight() + 10) return;
+
+        if (lastLocation.getOrDefault(e.getPlayer().getUniqueId(), locFrom).equals(locTo)) return;
+        else lastLocation.put(e.getPlayer().getUniqueId(), locTo);
+
+        if (locFrom.getBlock().equals(locTo.getBlock())) {
+            return;
+        }
+
+        final Player player = e.getPlayer();
+
+        checkBan(player, locFrom, locTo, true);
+
+
+    }
+
     private boolean checkBan(Player player, Location locFrom, Location locTo, boolean tp) {
         final Claim claim = GriefPrevention.instance.dataStore.getClaimAt(locTo, true, null);
 
         if (claim == null) return false;
+
+        removePassengers(player);
 
         final ParticleHandler ph = new ParticleHandler(locTo);
 
@@ -129,28 +154,7 @@ public class GPListener implements Listener {
         return false;
     }
 
-    @EventHandler(ignoreCancelled = true)
-    public void onPlayerEnterClaim(PlayerMoveEvent e) {
-        final Location locFrom = e.getFrom();
-        final Location locTo = e.getTo();
 
-        if (locTo == null || locTo.getWorld() == null) return;
-
-        if (locTo.getBlockY() > locTo.getWorld().getMaxHeight() + 10) return;
-
-        if (lastLocation.getOrDefault(e.getPlayer().getUniqueId(), locFrom).equals(locTo)) return;
-        else lastLocation.put(e.getPlayer().getUniqueId(), locTo);
-
-        if (locFrom.getBlock().equals(locTo.getBlock())) {
-            return;
-        }
-
-        final Player player = e.getPlayer();
-
-        checkBan(player, locFrom, locTo, true);
-        removePassengers(player, GriefPrevention.instance.dataStore.getClaimAt(locTo, false, null));
-
-    }
 
 
     private boolean playerBanned(Player player, String claimID) {
@@ -180,8 +184,7 @@ public class GPListener implements Listener {
         }
     }
 
-    private void removePassengers(Player player, Claim claim) {
-        claim = GriefPrevention.instance.dataStore.getClaimAt(player.getLocation(), false, null);
+    private void removePassengers(Player player) {
         if (player.getPassengers().size() != 0) {
             for (Entity entity : player.getPassengers()) {
                         player.removePassenger(entity);
